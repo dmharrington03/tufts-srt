@@ -20,3 +20,6 @@ class User(db.Model, UserMixin):
     validated = db.Column(db.Boolean, default=False, nullable=False)
     admin = db.Column(db.Boolean, default=False, nullable=False)
     n_scheduled_observations = db.Column(db.Integer, default=0, nullable=False)
+
+    def __repr__(self):
+        return f"<User '{self.name}'>"
