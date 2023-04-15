@@ -421,7 +421,7 @@ def generate_popups():
     )
 
 
-def generate_layout():
+def generate_layout(user):
     """Generates the Basic Layout for the Monitor Page
 
     Returns
@@ -452,7 +452,7 @@ def generate_layout():
     }
     layout = html.Div(
         [
-            generate_navbar(drop_down_buttons),
+            generate_navbar(drop_down_buttons, user, title="Commands"),
             generate_first_row(),
             html.Div(
                 [

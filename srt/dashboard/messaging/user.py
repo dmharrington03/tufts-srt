@@ -23,3 +23,12 @@ class User(db.Model, UserMixin):
 
     def __repr__(self):
         return f"<User '{self.name}'>"
+
+    def get_name(self):
+        return f"<User '{self.name}'>"
+
+    def get_email(self):
+        return f"<User '{self.email}'>"
+    
+    def get_observations(self):
+        return f"<User '{self.n_scheduled_observations}'>"
