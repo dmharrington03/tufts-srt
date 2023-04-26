@@ -417,6 +417,76 @@ def generate_popups():
                 ],
                 id="start-modal",
             ),
+            dbc.Modal(
+                [
+                    dbc.ModalHeader("Observation Information"),
+                    dbc.ModalBody(
+                        [
+                            dcc.Input(
+                                id="obs-name",
+                                type="text",
+                                debounce=True,
+                                placeholder="Observation Name",
+                                style={"width": "100%"},
+                            ),
+                            dcc.Input(
+                                id="obs-output-file",
+                                type="text",
+                                debounce=True,
+                                placeholder="Output File Name",
+                                style={"width": "100%"},
+                            ),
+                            dcc.Input(
+                                id="obs-start-time",
+                                type="number",
+                                debounce=True,
+                                placeholder="Start Time",
+                                style={"width": "50%"},
+                            ),
+                            dcc.Input(
+                                id="obs-ra",
+                                type="number",
+                                debounce=True,
+                                placeholder="RA",
+                                style={"width": "50%"},
+                            ),
+                            dcc.Input(
+                                id="obs-dec",
+                                type="number",
+                                debounce=True,
+                                placeholder="Dec",
+                                style={"width": "50%"},
+                            ),
+                            dcc.Input(
+                                id="obs-dur",
+                                type="number",
+                                debounce=True,
+                                placeholder="Duration",
+                                style={"width": "50%"},
+                            ),
+                        ]
+                    ),
+                    dbc.ModalFooter(
+                        [
+                            dbc.Button(
+                                "Cancel",
+                                id="obs-btn-cancel",
+                                className="ml-auto",
+                                # block=True,
+                                color="primary",
+                            ),
+                            dbc.Button(
+                                "Confirm",
+                                id="obs-btn-confirm",
+                                className="ml-auto",
+                                # block=True,
+                                color="secondary",
+                            ),
+                        ]
+                    )
+                ],
+                id="obs-modal"
+            ),
         ]
     )
 
@@ -496,6 +566,42 @@ def register_callbacks(
     -------
     None
     """
+
+    @app.callback(
+        Output("obs-modal", "is_open"),
+        [
+            Input("btn-create-obs", "n_clicks"),
+            Input("obs-btn-confirm", "n_clicks"),
+            Input("obs-btn-cancel", "n_clicks"),
+        ],
+        [
+            State("obs-modal", "is_open")
+            # State("frequency", "value"),
+        ],
+    )
+    def obs_click_func(n_clicks_btn, n_clicks_confirm, n_clicks_cancel, is_open): # FIGURE THIS OUT (BUTTON CALLBACK)
+        ctx = dash.callback_context
+        if not ctx.triggered:
+            return is_open
+        else:
+            # button_id = ctx.triggered[0]["prop_id"].split(".")[0]
+            # if button_id == "obs-btn-confirm":
+            #     command_thread.add_to_queue(f"freq {freq}")
+            if n_clicks_confirm or n_clicks_cancel or n_clicks_btn:
+                return not is_open
+            return is_open
+        
+    # def obs_click_func(n_clicks_btn, n_clicks_yes, n_clicks_no, is_open): # FIGURE THIS OUT (BUTTON CALLBACK)
+    #     ctx = dash.callback_context
+    #     if not ctx.triggered:
+    #         return is_open
+    #     else:
+    #         # button_id = ctx.triggered[0]["prop_id"].split(".")[0]
+    #         # if button_id == "freq-btn-yes":
+    #             # command_thread.add_to_queue(f"freq {freq}")
+    #         if n_clicks_yes or n_clicks_no or n_clicks_btn:
+    #             return not is_open
+    #         return is_open
 
     @app.callback(
         Output("cal-spectrum-histogram", "figure"),
