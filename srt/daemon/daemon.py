@@ -562,6 +562,9 @@ class SmallRadioTelescopeDaemon:
         status_port = 5555
         status_socket = context.socket(zmq.PUB)
         status_socket.bind("tcp://*:%s" % status_port)
+
+        # TODO push running observation's status
+
         while True:
             status = {
                 "beam_width": self.beamwidth,
@@ -624,6 +627,31 @@ class SmallRadioTelescopeDaemon:
         while True:
             cmd = command_socket.recv_string()
             self.command_queue.put(cmd)
+
+    def run_scheduled_commands(self):
+        """Reads Observations from Database and Sends Commands to Command Queue
+        at Correct Time
+        Infinite Looping Thread Function
+        
+        Returns
+        --------
+        None
+        """
+
+        #TODO
+        # Get list of observations from database in ascending order (soonest first)
+        # Todo look at how to get ra/dec at certain lat/lon
+        # For top obs: has a certain scheduled time?
+            # Yes - check if (time - scheduled) < dt
+            # No - run immediately
+        # Get corresponding user, set up data target file
+        # When run:
+            # Send commands to ZMQ thread
+            # Send/write data to target file
+            # Set class variable to current status (i.e. % completion,
+            # obs ID)
+        # Remove obs from database
+
 
     def srt_daemon_main(self):
         """Starts and Processes Commands for the SRT
