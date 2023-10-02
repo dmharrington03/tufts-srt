@@ -641,9 +641,7 @@ class SmallRadioTelescopeDaemon:
         #TODO
         # Get list of observations from database in ascending order (soonest first)
         # Todo look at how to get ra/dec at certain lat/lon
-        # For top obs: has a certain scheduled time?
-            # Yes - check if (time - scheduled) < dt
-            # No - run immediately
+        # Wait until object available.
         # Get corresponding user, set up data target file
         # When run:
             # Send commands to ZMQ thread
