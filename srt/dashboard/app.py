@@ -152,7 +152,7 @@ def generate_app(config_dir, config_dict):
                             style={"height": "100%", "width": "100%"},
                         )
                     ],
-                    href="https://www.haystack.mit.edu/",
+                    href="https://as.tufts.edu/physics/",
                 )
             ]
         ),
