@@ -3,7 +3,7 @@
 Module for Tracking and Caching the Azimuth-Elevation Coords of Celestial Objects
 
 """
-from astropy.coordinates import SkyCoord, EarthLocation, get_sun, get_moon
+from astropy.coordinates import SkyCoord, EarthLocation, get_sun, get_body
 from astropy.coordinates import ICRS, Galactic, FK4, CIRS, AltAz
 from astropy.utils.iers.iers import conf
 from astropy.table import Table
@@ -111,7 +111,7 @@ class EphemerisTracker:
         if name == "Sun":
             alt_az = get_sun(time).transform_to(alt_az_frame)
         elif name == "Moon":
-            alt_az = get_moon(time, self.location).transform_to(alt_az_frame)
+            alt_az = get_body("moon", time, self.location).transform_to(alt_az_frame)
         else:
             alt_az = self.sky_coords[self.sky_coord_names[name]].transform_to(
                 alt_az_frame
