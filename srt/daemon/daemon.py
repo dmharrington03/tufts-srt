@@ -27,6 +27,10 @@ from .radio_control.radio_task_starter import (
 from .utilities.object_tracker import EphemerisTracker
 from .utilities.functions import azel_within_range, get_spectrum
 
+from ..dashboard.messaging.observation import Observation
+from ..dashboard.messaging.user import User
+from sqlalchemy import create_engine, text, delete, select, asc, update
+from sqlalchemy.orm import sessionmaker
 
 class SmallRadioTelescopeDaemon:
     """
@@ -138,6 +142,11 @@ class SmallRadioTelescopeDaemon:
         # List for data that will be plotted in the app
         self.n_point_data = []
         self.beam_switch_data = []
+
+        self.current_observation_id = None
+        self.obs_percent_completion = 0
+        self.current_observation_user_id = None
+        self.current_observation_name = None
 
     def log_message(self, message):
         """Writes Contents to a Logging List and Prints
@@ -590,6 +599,10 @@ class SmallRadioTelescopeDaemon:
                 "cal_power": self.cal_power,
                 "n_point_data": self.n_point_data,
                 "beam_switch_data": self.beam_switch_data,
+                "current_observation_id": self.current_observation_id,
+                "current_observation_user_id": self.current_observation_user_id,
+                "current_observation_percent_completion": self.obs_percent_completion,
+                "current_observation_name": self.current_observation_name,
                 "time": time(),
             }
             status_socket.send_json(status)
@@ -638,6 +651,84 @@ class SmallRadioTelescopeDaemon:
         None
         """
 
+        # Initialize engine to connect with database
+        self.engine = create_engine('sqlite:///data.sqlite', connect_args={'check_same_thread': False})
+        self.Session = sessionmaker(bind=self.engine)
+
+        last_obs_id = None
+        setup_obs = False
+
+        #config folder has file save directory
+        while True:
+            session = self.Session()
+            observation = session.query(Observation).order_by(asc(Observation.scheduled_time)).first()
+            
+            # Check if there are observations
+            if observation and last_obs_id:
+
+                # If observation is different from previous, setup hasn't been done
+                if last_obs_id != observation.id:
+                    setup_obs = False
+                
+                user = session.get(User, observation.user_id)
+                obs_id = observation.id
+                user_id = observation.user_id
+                output_file_name = observation.output_file_name
+                obs_name = observation.obs_name
+                start_time = observation.obs_start_time
+                duration = observation.duration
+                end_time = start_time + timedelta(seconds=duration)
+                now = datetime.now()
+                delta_start = (start_time-now).total_seconds()
+                delta_end = (end_time-now).total_seconds()
+                
+                # Queried observation started in the past
+                if delta_start < 0:  
+
+                    # Observation ended  
+                    if delta_end <= 0:
+                        self.obs_percent_completion = 100
+                        self.command_queue.put("roff")
+                        session.delete(observation)
+                        session.commit()
+                        self.log_message("Observation finished")
+
+                    # Observation currently running
+                    elif delta_end > 0:
+                        
+                        # Telescope was set up
+                        if setup_obs: 
+                            self.obs_percent_completion = abs(delta_start) / duration * 100
+                            self.log_message(f"Observation running: {round(self.obs_percent_completion)}%")
+
+                        # Telescope wasn't set up because obs_start_time was during other observation
+                        # so reschedule this observation
+                        else:
+                            # Make function to reschedule based on time object is visible
+                            observation.scheduled_time = start_time + timedelta(seconds=abs(delta_start)+30)
+                            observation.obs_start_time = start_time + timedelta(seconds=abs(delta_start)+30)
+                            session.commit()
+                            self.log_message("Rescheduling")
+                    
+                # Queried observation hasn't started + no current observation running
+                elif delta_start >= 0 and setup_obs == False:   
+                    setup_obs=True
+                    #  file_path = f"[PATH]/{output_file_name}"
+                    self.current_observation_id = obs_id
+                    self.current_observation_user_id = user_id
+                    self.current_observation_name = obs_name
+                    ra = observation.ra
+                    dec = observation.dec
+                    # az, el = getAzElFromRaDec(ra, dec)            # Need function
+                    az, el = 15, 10
+
+                    self.command_queue.put(f"azel {az} {el}")
+                    self.command_queue.put(f"wait {delta_start}")
+                    self.command_queue.put(f"record {output_file_name}")
+
+            last_obs_id = observation.id if observation else None
+            sleep(0.5)
+
         #TODO
         # Get list of observations from database in ascending order (soonest first)
         # Todo look at how to get ra/dec at certain lat/lon
@@ -667,6 +758,7 @@ class SmallRadioTelescopeDaemon:
         command_queueing_thread = Thread(target=self.update_command_queue, daemon=True)
         status_thread = Thread(target=self.update_status, daemon=True)
         radio_thread = Thread(target=self.update_radio_settings, daemon=True)
+        command_running_thread = Thread(target=self.run_scheduled_commands, daemon=True)
 
         # If the GNU Radio Script Should be Running, Start It
         if self.radio_autostart:
@@ -710,6 +802,7 @@ class SmallRadioTelescopeDaemon:
         command_queueing_thread.start()
         status_thread.start()
         radio_thread.start()
+        command_running_thread.start()
 
         while self.keep_running:
             try:
