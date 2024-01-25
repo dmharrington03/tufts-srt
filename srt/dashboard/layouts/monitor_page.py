@@ -944,9 +944,9 @@ def register_callbacks(
                 command_thread.add_to_queue("calibrate")
 
     @app.callback(Output("url", "pathname"), [Input("btn-logout", "n_clicks")])
-    def logout(n):
+    def logout(n_clicks: int):
         
-        if n > 0:
+        if n_clicks is not None and n_clicks > 0:
             logout_user()
         else:
             pass
