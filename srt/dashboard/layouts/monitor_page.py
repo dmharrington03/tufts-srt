@@ -946,8 +946,10 @@ def register_callbacks(
     @app.callback(Output("url", "pathname"), [Input("btn-logout", "n_clicks")])
     def logout(n_clicks: int):
         
-        if n_clicks is not None and n_clicks > 0:
+        if n_clicks is None:
+            raise PreventUpdate
+        elif n_clicks > 0:
             logout_user()
         else:
-            pass
+            raise PreventUpdate
         
