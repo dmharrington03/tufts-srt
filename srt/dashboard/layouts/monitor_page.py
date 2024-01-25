@@ -22,6 +22,8 @@ from dash.exceptions import PreventUpdate
 
 from dash.dependencies import Input, Output, State
 
+from flask_login import logout_user
+
 from pathlib import Path
 from time import time
 import base64
@@ -450,11 +452,15 @@ def generate_layout(user):
             dbc.DropdownMenuItem("Start Daemon", id="btn-start"),
             dbc.DropdownMenuItem("Shutdown", id="btn-quit"),
         ],
+        "Account": [
+            dbc.DropdownMenuItem("Logout", id="btn-logout"),
+            dbc.DropdownMenuItem("My Data", id="btn-my-data"),
+        ],
     }
     
     layout = html.Div(
-        [
-            generate_navbar(drop_down_buttons),
+        [   
+            generate_navbar(drop_down_buttons),   
             generate_queue_list(user),
             generate_first_row(),
             html.Div(
@@ -936,3 +942,12 @@ def register_callbacks(
                 command_thread.add_to_queue("quit")
             elif button_id == "btn-calibrate":
                 command_thread.add_to_queue("calibrate")
+
+    @app.callback(Output("url", "pathname"), [Input("btn-logout", "n_clicks")])
+    def logout(n_clicks: int):
+        
+        if n_clicks is not None and n_clicks > 0:
+            logout_user()
+        else:
+            pass
+        
