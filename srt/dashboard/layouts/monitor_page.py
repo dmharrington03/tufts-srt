@@ -22,6 +22,8 @@ from dash.exceptions import PreventUpdate
 
 from dash.dependencies import Input, Output, State
 
+from flask_login import logout_user
+
 from pathlib import Path
 from time import time
 import base64
@@ -29,6 +31,7 @@ import io
 import numpy as np
 
 from .navbar import generate_navbar
+from .observation_queue import generate_queue_list, register_obs_callbacks
 from .graphs import (
     generate_az_el_graph,
     generate_power_history_graph,
@@ -492,30 +495,47 @@ def generate_layout(user):
     layout: html.div
         Monitor Page Layout
     """
-    drop_down_buttons = {
-        "Antenna": [
-            dbc.DropdownMenuItem("Stow", id="btn-stow"),
-            dbc.DropdownMenuItem("Set AzEl", id="btn-point-azel"),
-            dbc.DropdownMenuItem("Set Offsets", id="btn-set-offset"),
-        ],
-        "Radio": [
-            dbc.DropdownMenuItem("Set Frequency", id="btn-set-freq"),
-            dbc.DropdownMenuItem("Set Bandwidth", id="btn-set-samp"),
-        ],
-        "Routine": [
-            dbc.DropdownMenuItem("Start Recording", id="btn-start-record"),
-            dbc.DropdownMenuItem("Stop Recording", id="btn-stop-record"),
-            dbc.DropdownMenuItem("Calibrate", id="btn-calibrate"),
-            dbc.DropdownMenuItem("Upload CMD File", id="btn-cmd-file"),
-        ],
-        "Power": [
-            dbc.DropdownMenuItem("Start Daemon", id="btn-start"),
-            dbc.DropdownMenuItem("Shutdown", id="btn-quit"),
-        ],
-    }
+
+    # Only show full controls for admin users
+    if (user and user.admin):
+        drop_down_buttons = {
+            "Antenna": [
+                dbc.DropdownMenuItem("Stow", id="btn-stow"),
+                dbc.DropdownMenuItem("Set AzEl", id="btn-point-azel"),
+                dbc.DropdownMenuItem("Set Offsets", id="btn-set-offset"),
+            ],
+            "Radio": [
+                dbc.DropdownMenuItem("Set Frequency", id="btn-set-freq"),
+                dbc.DropdownMenuItem("Set Bandwidth", id="btn-set-samp"),
+            ],
+            "Routine": [
+                dbc.DropdownMenuItem("Start Recording", id="btn-start-record"),
+                dbc.DropdownMenuItem("Stop Recording", id="btn-stop-record"),
+                dbc.DropdownMenuItem("Calibrate", id="btn-calibrate"),
+                dbc.DropdownMenuItem("Upload CMD File", id="btn-cmd-file"),
+            ],
+            "Power": [
+                dbc.DropdownMenuItem("Start Daemon", id="btn-start"),
+                dbc.DropdownMenuItem("Shutdown", id="btn-quit"),
+            ],
+            "Account": [
+                dbc.DropdownMenuItem("Logout", id="btn-logout"),
+                dbc.DropdownMenuItem("My Data", id="btn-my-data"),
+            ],
+        }
+    else:
+        drop_down_buttons = {
+            "Account": [
+                dbc.DropdownMenuItem("Logout", id="btn-logout"),
+                dbc.DropdownMenuItem("My Data", id="btn-my-data"),
+            ],
+        }
+
+    
     layout = html.Div(
         [
             generate_navbar(drop_down_buttons, user, title="Commands"),
+            generate_queue_list(user),
             generate_first_row(),
             html.Div(
                 [
@@ -536,7 +556,8 @@ def generate_layout(user):
 
 
 def register_callbacks(
-    app, config, status_thread, command_thread, raw_spectrum_thread, cal_spectrum_thread
+    app, user, config, status_thread, command_thread, raw_spectrum_thread,
+    cal_spectrum_thread
 ):
     """Registers the Callbacks for the Monitor Page
 
@@ -544,6 +565,7 @@ def register_callbacks(
     ----------
     app : Dash Object
         Dash Object to Set Up Callbacks to
+    user: Flask-login user proxy
     config : dict
         Contains All Settings for Dashboard / Daemon
     status_thread : Thread
@@ -559,6 +581,10 @@ def register_callbacks(
     -------
     None
     """
+
+    # Register Callbacks for the Observation Queue
+    register_obs_callbacks(app, user)
+
 
     @app.callback(
         Output("obs-modal", "is_open"),
@@ -1024,3 +1050,14 @@ def register_callbacks(
                 command_thread.add_to_queue("quit")
             elif button_id == "btn-calibrate":
                 command_thread.add_to_queue("calibrate")
+
+    @app.callback(Output("url", "pathname"), [Input("btn-logout", "n_clicks")])
+    def logout(n_clicks: int):
+        
+        if n_clicks is None:
+            raise PreventUpdate
+        elif n_clicks > 0:
+            logout_user()
+        else:
+            raise PreventUpdate
+        

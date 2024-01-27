@@ -7,8 +7,7 @@ See https://flask-login.readthedocs.io/en/latest/
 
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
-
-db = SQLAlchemy()
+from ...dashboard import db
 
 class User(db.Model, UserMixin):
     
@@ -21,9 +20,6 @@ class User(db.Model, UserMixin):
     admin = db.Column(db.Boolean, default=False, nullable=False)
     n_scheduled_observations = db.Column(db.Integer, default=0, nullable=False)
 
-    def __repr__(self):
-        return f"<User '{self.name}'>"
-
     def get_name(self):
         return f"<User '{self.name}'>"
 
@@ -32,3 +28,6 @@ class User(db.Model, UserMixin):
     
     def get_observations(self):
         return f"<User '{self.n_scheduled_observations}'>"
+
+    def __repr__(self) -> str:
+        return f"""<User '{self.name}'>"""

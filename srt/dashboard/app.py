@@ -42,6 +42,8 @@ from .messaging.spectrum_fetcher import SpectrumThread
 # from .messaging.user_data_handler import UserDatabase
 from .messaging.user import User
 
+from ..dashboard import db
+
 
 def generate_app(config_dir, config_dict):
     """Generates App and Server Objects for Hosting Dashboard
@@ -77,7 +79,7 @@ def generate_app(config_dir, config_dict):
     server.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///../../data.sqlite"
     server.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
     server.secret_key = b'_5#y2L"F4Q8z\n\xec]/' #! TESTING ONLY - CHANGE IN PROD
-    db = SQLAlchemy(server)
+    # db = SQLAlchemy()
     db.init_app(server)
 
     # Setup Flask-login
@@ -150,7 +152,7 @@ def generate_app(config_dir, config_dict):
                             style={"height": "100%", "width": "100%"},
                         )
                     ],
-                    href="https://www.haystack.mit.edu/",
+                    href="https://as.tufts.edu/physics/",
                 )
             ]
         ),
@@ -197,6 +199,7 @@ def generate_app(config_dir, config_dict):
     # Create Callbacks for Monitoring Page Objects
     monitor_page.register_callbacks(
         app,
+        current_user,
         config_dict,
         status_thread,
         command_thread,
@@ -324,6 +327,18 @@ def generate_app(config_dir, config_dict):
          - Bandwidth: {bandwidth / pow(10, 6)} MHz
         """
         return status_string
+
+    @app.callback(Output("sidebar", "style"), [Input("url", "pathname")])
+    def hide_sidebar_on_login(pathname):
+        if pathname == "/login":
+            return {"display": "none",
+                    "width": 0 }
+    
+    @app.callback(Output("page-content", "style"), [Input("url", "pathname")])
+    def remove_padding_on_login(pathname):
+        if pathname == "/login":
+            return {"margin": 0}
+                    
 
     @app.callback(Output("page-content", "children"), [Input("url", "pathname")])
     def render_page_content(pathname):
