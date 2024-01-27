@@ -20,5 +20,14 @@ class User(db.Model, UserMixin):
     admin = db.Column(db.Boolean, default=False, nullable=False)
     n_scheduled_observations = db.Column(db.Integer, default=0, nullable=False)
 
+    def get_name(self):
+        return f"<User '{self.name}'>"
+
+    def get_email(self):
+        return f"<User '{self.email}'>"
+    
+    def get_observations(self):
+        return f"<User '{self.n_scheduled_observations}'>"
+
     def __repr__(self) -> str:
         return f"""<User '{self.name}'>"""
