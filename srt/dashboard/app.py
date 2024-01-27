@@ -319,6 +319,7 @@ def generate_app(config_dir, config_dict):
             else:
                 status_string = "SRT In Use!"
 
+        # TODO add current observation display here
         status_string = f"""
          #### {status_string}
          - Motor Az, El: {az:.1f}, {el:.1f} deg
