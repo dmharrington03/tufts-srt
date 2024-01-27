@@ -71,6 +71,8 @@ def generate_navbar(dropdowns, user, title="Commands"):
             dark=True,
         )
         return navbar
+    else:
+        return None
 
 # def generate_popups():
 #     """Generates all 'Pop-up' Modal Components
