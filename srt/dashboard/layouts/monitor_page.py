@@ -605,7 +605,7 @@ def register_callbacks(
             # State("frequency", "value"),
         ],
     )
-    def obs_click_func(n_clicks_btn, n_clicks_confirm, n_clicks_cancel, is_open, obs_data): # FIGURE THIS OUT (BUTTON CALLBACK)
+    def obs_click_func(n_clicks_btn, n_clicks_confirm, n_clicks_cancel, is_open, obs_data):
         ctx = dash.callback_context
         if not ctx.triggered:
             return is_open
@@ -614,6 +614,7 @@ def register_callbacks(
             if button_id == "obs-btn-confirm":
                 print("Confirm button pressed")
                 print(f"Observation name: {obs_data.name}")
+                # todo test observation, add to database
 
 
             if n_clicks_confirm or n_clicks_cancel or n_clicks_btn:
