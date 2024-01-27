@@ -40,30 +40,31 @@ def generate_navbar(dropdowns, user, title="Commands"):
     -------
     NavbarSimple
     """
+    navlist = [
+        dbc.DropdownMenu(
+            children=dropdowns[drop_down],
+            in_navbar=True,
+            label=drop_down,
+            style={"display": "inline-block", "flexWrap": "wrap"},
+            className="m-1",
+        )
+        for drop_down in dropdowns
+    ]
+
     if user:
+        navlist.append(
+            dbc.NavItem(
+                f"Name: {user.name}", style={"display": "inline-block", "flexWrap": "wrap"},
+                className="m-1",
+        ))
+        navlist.append(
+            dbc.NavItem(
+                f"Number of Observations: {user.n_scheduled_observations}", style={"display": "inline-block", "flexWrap": "wrap"}, className="m-1",
+        ))
 
         navbar = dbc.NavbarSimple(
             [
-                html.Div(
-                    [
-                        dbc.NavItem(f"Name: {user.name}"),
-                        dbc.NavItem(f"Number of Observations: {user.n_scheduled_observations}")
-                    ],
-                    style={"display": "inline-block"}
-                ),
-                dbc.NavLink("Create Observation", id="btn-create-obs"),
-                html.Div(
-                    [
-                        dbc.DropdownMenu(
-                            children=dropdowns[drop_down],
-                            in_navbar=True,
-                            label=drop_down,
-                            style={"display": "inline-block", "flexWrap": "wrap"},
-                            className="m-1",
-                        )
-                        for drop_down in dropdowns
-                    ]
-                )
+                html.Div(navlist),
             ],
             brand=title,
             brand_style={"font-size": "large"},
