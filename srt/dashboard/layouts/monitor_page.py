@@ -432,31 +432,42 @@ def generate_layout(user):
     layout: html.div
         Monitor Page Layout
     """
-    drop_down_buttons = {
-        "Antenna": [
-            dbc.DropdownMenuItem("Stow", id="btn-stow"),
-            dbc.DropdownMenuItem("Set AzEl", id="btn-point-azel"),
-            dbc.DropdownMenuItem("Set Offsets", id="btn-set-offset"),
-        ],
-        "Radio": [
-            dbc.DropdownMenuItem("Set Frequency", id="btn-set-freq"),
-            dbc.DropdownMenuItem("Set Bandwidth", id="btn-set-samp"),
-        ],
-        "Routine": [
-            dbc.DropdownMenuItem("Start Recording", id="btn-start-record"),
-            dbc.DropdownMenuItem("Stop Recording", id="btn-stop-record"),
-            dbc.DropdownMenuItem("Calibrate", id="btn-calibrate"),
-            dbc.DropdownMenuItem("Upload CMD File", id="btn-cmd-file"),
-        ],
-        "Power": [
-            dbc.DropdownMenuItem("Start Daemon", id="btn-start"),
-            dbc.DropdownMenuItem("Shutdown", id="btn-quit"),
-        ],
-        "Account": [
-            dbc.DropdownMenuItem("Logout", id="btn-logout"),
-            dbc.DropdownMenuItem("My Data", id="btn-my-data"),
-        ],
-    }
+
+    # Only show full controls for admin users
+    if (user and user.admin):
+        drop_down_buttons = {
+            "Antenna": [
+                dbc.DropdownMenuItem("Stow", id="btn-stow"),
+                dbc.DropdownMenuItem("Set AzEl", id="btn-point-azel"),
+                dbc.DropdownMenuItem("Set Offsets", id="btn-set-offset"),
+            ],
+            "Radio": [
+                dbc.DropdownMenuItem("Set Frequency", id="btn-set-freq"),
+                dbc.DropdownMenuItem("Set Bandwidth", id="btn-set-samp"),
+            ],
+            "Routine": [
+                dbc.DropdownMenuItem("Start Recording", id="btn-start-record"),
+                dbc.DropdownMenuItem("Stop Recording", id="btn-stop-record"),
+                dbc.DropdownMenuItem("Calibrate", id="btn-calibrate"),
+                dbc.DropdownMenuItem("Upload CMD File", id="btn-cmd-file"),
+            ],
+            "Power": [
+                dbc.DropdownMenuItem("Start Daemon", id="btn-start"),
+                dbc.DropdownMenuItem("Shutdown", id="btn-quit"),
+            ],
+            "Account": [
+                dbc.DropdownMenuItem("Logout", id="btn-logout"),
+                dbc.DropdownMenuItem("My Data", id="btn-my-data"),
+            ],
+        }
+    else:
+        drop_down_buttons = {
+            "Account": [
+                dbc.DropdownMenuItem("Logout", id="btn-logout"),
+                dbc.DropdownMenuItem("My Data", id="btn-my-data"),
+            ],
+        }
+
     
     layout = html.Div(
         [   
