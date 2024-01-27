@@ -437,13 +437,6 @@ def generate_popups():
                                 style={"width": "100%"},
                             ),
                             dcc.Input(
-                                id="obs-start-time",
-                                type="number",
-                                debounce=True,
-                                placeholder="Start Time",
-                                style={"width": "50%"},
-                            ),
-                            dcc.Input(
                                 id="obs-ra",
                                 type="number",
                                 debounce=True,
@@ -575,34 +568,32 @@ def register_callbacks(
             Input("obs-btn-cancel", "n_clicks"),
         ],
         [
-            State("obs-modal", "is_open")
+            State("obs-modal", "is_open"),
+            {
+                "name": State("obs-name", "value"),
+                "fname": State("obs-output-file", "value"),
+                "ra": State("obs-ra", "value"),
+                "dec": State("obs-dec", "value"),
+                "dur": State("obs-dur", "value"),
+            }
             # State("frequency", "value"),
         ],
     )
-    def obs_click_func(n_clicks_btn, n_clicks_confirm, n_clicks_cancel, is_open): # FIGURE THIS OUT (BUTTON CALLBACK)
+    def obs_click_func(n_clicks_btn, n_clicks_confirm, n_clicks_cancel, is_open, obs_data): # FIGURE THIS OUT (BUTTON CALLBACK)
         ctx = dash.callback_context
         if not ctx.triggered:
             return is_open
         else:
-            # button_id = ctx.triggered[0]["prop_id"].split(".")[0]
-            # if button_id == "obs-btn-confirm":
-            #     command_thread.add_to_queue(f"freq {freq}")
+            button_id = ctx.triggered[0]["prop_id"].split(".")[0]
+            if button_id == "obs-btn-confirm":
+                print("Confirm button pressed")
+                print(f"Observation name: {obs_data.name}")
+
+
             if n_clicks_confirm or n_clicks_cancel or n_clicks_btn:
                 return not is_open
             return is_open
-        
-    # def obs_click_func(n_clicks_btn, n_clicks_yes, n_clicks_no, is_open): # FIGURE THIS OUT (BUTTON CALLBACK)
-    #     ctx = dash.callback_context
-    #     if not ctx.triggered:
-    #         return is_open
-    #     else:
-    #         # button_id = ctx.triggered[0]["prop_id"].split(".")[0]
-    #         # if button_id == "freq-btn-yes":
-    #             # command_thread.add_to_queue(f"freq {freq}")
-    #         if n_clicks_yes or n_clicks_no or n_clicks_btn:
-    #             return not is_open
-    #         return is_open
-
+    
     @app.callback(
         Output("cal-spectrum-histogram", "figure"),
         [Input("interval-component", "n_intervals")],
