@@ -34,7 +34,7 @@ import sqlite3
 from flask_login import login_user, logout_user, current_user, LoginManager, UserMixin
 
 
-from .layouts import monitor_page, system_page, login_page, create_page  # , figure_page
+from .layouts import monitor_page, system_page, login_page, create_page, data_page
 from .layouts.sidebar import generate_sidebar
 from .messaging.status_fetcher import StatusThread
 from .messaging.command_dispatcher import CommandThread
@@ -103,8 +103,8 @@ def generate_app(config_dir, config_dict):
     pages = {
         "Monitor Page": "monitor-page",
         "System Page": "system-page",
-        #? TODO
-        "Login Page": "login"
+        "Login Page": "login",
+        "Data Page": "data-page"
         #    "Figure Page": "figure-page"
     }
 
@@ -185,7 +185,8 @@ def generate_app(config_dir, config_dict):
             monitor_page.generate_layout(current_user),
             system_page.generate_layout(),
             login_page.generate_layout(),
-            create_page.generate_layout()
+            create_page.generate_layout(),
+            data_page.generate_layout(current_user)
             #    figure_page.generate_layout()
         ]
     )  # Necessary for Allowing Other Files to Create Callbacks
@@ -210,6 +211,7 @@ def generate_app(config_dir, config_dict):
     system_page.register_callbacks(app, config_dict, status_thread)
     login_page.register_callbacks(app)
     create_page.register_callbacks(app, db)
+    #todo data_page.register_callbacks(app)
 
     # # Create Callbacks for figure page callbacks
     # figure_page.register_callbacks(app,config_dict, status_thread)
@@ -372,6 +374,11 @@ def generate_app(config_dir, config_dict):
         elif pathname == "/create":
             if not current_user.is_authenticated:
                 return create_page.generate_layout()
+            else:
+                return dcc.Location(pathname="/", id="to-root")
+        elif pathname == f"/{pages['Data Page']}":
+            if current_user.is_authenticated:
+                return data_page.generate_layout(current_user)
             else:
                 return dcc.Location(pathname="/", id="to-root")
             
