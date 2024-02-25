@@ -31,6 +31,7 @@ class Observation(db.Model):
     duration = db.Column(db.Integer, nullable=False)
 
     output_file_name = db.Column(db.String, nullable=False)
+    completed = db.Column(db.Boolean, default=False, nullable=False)
 
     user_id = db.Column(db.Integer, db.ForeignKey(User.id), nullable=False)
     user = db.relationship(User, backref=db.backref('observations', lazy=True))
@@ -39,6 +40,7 @@ class Observation(db.Model):
     def from_dict(self, config):
         target_name = config.get("target_obj_name")
         file_name = config.get("output_file_name")
+        is_completed = False
         try:
             name = config["obs_name"]
             schd_time = config["scheduled_time"]
@@ -60,9 +62,21 @@ class Observation(db.Model):
             ra=ra,
             dec=dec,
             duration=duration,
-            output_file_name=file_name
+            output_file_name=file_name,
+            completed=is_completed,
         )
             
     def __repr__(self) -> str:
         return f"""<Observation '{self.obs_name}'>"""
+    
+    def get_display_data(self):
+        return {
+            "Name": self.obs_name,
+            "Target Name": self.target_obj_name,
+            "RA": self.ra,
+            "DEC": self.dec,
+            "Time": self.scheduled_time,
+            "Completed": "Yes" if self.completed else "No",
+            "File": self.output_file_name,
+        }
     
