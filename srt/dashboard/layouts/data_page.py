@@ -19,8 +19,9 @@ from dash.dependencies import Input, Output, State
 from urllib.parse import quote as urlquote
 from datetime import datetime
 from pathlib import Path
+from ..messaging.observation import Observation
 
-
+    
 def generate_layout(user):
     """Generates the Basic Layout for the Data Page
 
@@ -28,6 +29,28 @@ def generate_layout(user):
     -------
     Data Page Layout
     """
+
+    obs_table = html.Div("No Observation Data")
+
+    if (user != None and len(user.observations) > 0):
+        # completed = [ obs for obs in user.observations ]
+        obs = user.observations[0]
+        obs_data = obs.get_display_data()
+
+        table_data = []
+
+        for obs in user.observations:
+            obs_data = obs.get_display_data()
+            table_data.append(
+                html.Tr([ html.Td(obs_data.get(i)) for i in obs_data.keys() ])
+            )
+
+        obs_table = html.Table(
+            [ html.Tr([ html.Th(col, style={"fontWeight": "900"}) for col in obs_data.keys()]) ] +
+            table_data
+        )
+
+
     layout = html.Div(
         [
             html.Div(
@@ -39,7 +62,7 @@ def generate_layout(user):
                                 style={"text-align": "center"},
                             ),
                             html.Div(
-                                "No Observation data yet",
+                                obs_table,
                                 style={
                                     "height": 200,
                                     "overflow": "hidden",
