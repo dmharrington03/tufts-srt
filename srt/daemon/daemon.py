@@ -16,6 +16,8 @@ import zmq
 import json
 import numpy as np
 
+import serial
+
 from .rotor_control.rotors import Rotor
 from .radio_control.radio_task_starter import (
     RadioProcessTask,
@@ -138,6 +140,9 @@ class SmallRadioTelescopeDaemon:
         # List for data that will be plotted in the app
         self.n_point_data = []
         self.beam_switch_data = []
+
+        # Define serial port used for reading from temperature probe
+        # self.ser = serial.Serial('/dev/tty.usbserial-0001', 9600, timeout=.5) 
 
     def log_message(self, message):
         """Writes Contents to a Logging List and Prints
@@ -563,6 +568,21 @@ class SmallRadioTelescopeDaemon:
         status_socket = context.socket(zmq.PUB)
         status_socket.bind("tcp://*:%s" % status_port)
         while True:
+            try:
+                ser = serial.Serial('/dev/tty.usbserial-0001', 9600, timeout=.5) 
+            except serial.serialutil.SerialException:
+                ser = False
+            try:
+                temp_data = str(ser.readline().decode().strip()) + "\N{DEGREE SIGN}C"
+            except:
+                temp_data = "Temperature Probe not Connected"
+
+                
+
+            
+            
+            #else:
+        
             status = {
                 "beam_width": self.beamwidth,
                 "location": self.station,
@@ -588,6 +608,7 @@ class SmallRadioTelescopeDaemon:
                 "n_point_data": self.n_point_data,
                 "beam_switch_data": self.beam_switch_data,
                 "time": time(),
+                "temperature": temp_data,
             }
             status_socket.send_json(status)
             sleep(0.5)

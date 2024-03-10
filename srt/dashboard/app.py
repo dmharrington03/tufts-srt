@@ -304,6 +304,7 @@ def generate_app(config_dir, config_dict):
             cf = np.nan
             bandwidth = np.nan
             status_string = "SRT Not Connected"
+            temperature = "Temperature Probe not Connected"
         else:
             az = status["motor_azel"][0]
             el = status["motor_azel"][1]
@@ -312,6 +313,7 @@ def generate_app(config_dir, config_dict):
             cf = status["center_frequency"]
             bandwidth = status["bandwidth"]
             time_dif = time() - status["time"]
+            temperature = status["temperature"]
             if time_dif > 5:
                 status_string = "SRT Daemon Not Available"
             elif status["queue_size"] == 0 and status["queued_item"] == "None":
@@ -325,6 +327,7 @@ def generate_app(config_dir, config_dict):
          - Motor Offsets: {az_offset:.1f}, {el_offset:.1f} deg
          - Center Frequency: {cf / pow(10, 6)} MHz
          - Bandwidth: {bandwidth / pow(10, 6)} MHz
+         - Temperature: {temperature} 
         """
         return status_string
 
