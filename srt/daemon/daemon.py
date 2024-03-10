@@ -141,9 +141,6 @@ class SmallRadioTelescopeDaemon:
         self.n_point_data = []
         self.beam_switch_data = []
 
-        # Define serial port used for reading from temperature probe
-        # self.ser = serial.Serial('/dev/tty.usbserial-0001', 9600, timeout=.5) 
-
     def log_message(self, message):
         """Writes Contents to a Logging List and Prints
 
@@ -576,12 +573,6 @@ class SmallRadioTelescopeDaemon:
                 temp_data = str(ser.readline().decode().strip()) + "\N{DEGREE SIGN}C"
             except:
                 temp_data = "Temperature Probe not Connected"
-
-                
-
-            
-            
-            #else:
         
             status = {
                 "beam_width": self.beamwidth,
